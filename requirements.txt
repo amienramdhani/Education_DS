@@ -1,0 +1,8 @@
+joblib
+matplotlib
+matplotlib-inline
+matplotlib-venn
+numpy
+pandas
+seaborn
+scikit-learn
