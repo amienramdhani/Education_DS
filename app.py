@@ -129,24 +129,34 @@ with st.form("student_form"):
 if submitted:
     input_df = pd.DataFrame([inputs])
 
+    # Ubah pilihan dropdown menjadi nilai asli (misal "1 - Single" -> 1)
     for col in input_df.columns:
         if input_df[col].dtype == object and " - " in str(input_df[col][0]):
             input_df[col] = input_df[col].str.split(" - ").str[0].astype(int)
 
+    # Encoding untuk kolom kategorikal
     for col in categorical_columns:
-        input_df[col] = encoders[col].transform(input_df[col])
+        input_df[col] = encoders[col].transform(input_df[[col]])
 
+    # Scaling untuk kolom numerikal (preserve sebagai DataFrame)
     for col in numerical_pca_1 + numerical_pca_2:
-        input_df[col] = scalers[col].transform(input_df[[col]])
+        input_df[[col]] = scalers[col].transform(input_df[[col]])
 
-    pc1 = pca_1.transform(input_df[numerical_pca_1])
-    pc2 = pca_2.transform(input_df[numerical_pca_2])
-    pc_df = pd.DataFrame(pc1, columns=[f"pc1_{i+1}" for i in range(pc1.shape[1])])
-    pc_df[[f"pc2_{i+1}" for i in range(pc2.shape[1])]] = pc2
+    # PCA 1
+    pca_input_1 = input_df[numerical_pca_1].copy()
+    pc1 = pca_1.transform(pca_input_1)
+    pc1_df = pd.DataFrame(pc1, columns=[f"pc1_{i+1}" for i in range(pc1.shape[1])])
 
+    # PCA 2
+    pca_input_2 = input_df[numerical_pca_2].copy()
+    pc2 = pca_2.transform(pca_input_2)
+    pc2_df = pd.DataFrame(pc2, columns=[f"pc2_{i+1}" for i in range(pc2.shape[1])])
+
+    # Gabungkan semua: categorical + pc1 + pc2
     final_df = input_df.drop(columns=numerical_pca_1 + numerical_pca_2).reset_index(drop=True)
-    final_df = pd.concat([final_df, pc_df], axis=1)
+    final_df = pd.concat([final_df, pc1_df, pc2_df], axis=1)
 
+    # Prediksi
     pred = model.predict(final_df)
     pred_label = target_encoder.inverse_transform(pred)[0]
 
