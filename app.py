@@ -17,8 +17,8 @@ numerical_pca_1 = [
 ]
 
 numerical_pca_2 = [
-    'Previous_qualification_grade','Application_order', 'Admission_grade', 'Age_at_enrollment',
-    'Unemployment_rate', 'Inflation_rate', 'GDP'
+    'Previous_qualification_grade', 'Admission_grade', 'Age_at_enrollment',
+    'Unemployment_rate', 'Inflation_rate', 'GDP', 'Application_order'
 ]
 
 categorical_columns = [
@@ -37,10 +37,6 @@ pca_2 = joblib.load("model/pca_2.joblib")
 st.set_page_config(page_title="Prediksi Status Mahasiswa", layout="wide")
 st.title("🎓 Prediksi Status Mahasiswa")
 st.markdown("Isi form di bawah ini untuk memprediksi status mahasiswa.")
-
-# Dropdown options sebagai list string "kode - label"
-def get_options(mapping):
-    return [f"{k} - {v}" for k, v in mapping.items()]
 
 # Mapping dictionary
 qual_dict = {
@@ -66,6 +62,9 @@ occupation_dict = {
     194: "Food Prep"
 }
 
+def get_options(mapping):
+    return [f"{k} - {v}" for k, v in mapping.items()]
+
 with st.form("student_form"):
     col1, col2 = st.columns(2)
     inputs = {}
@@ -75,9 +74,38 @@ with st.form("student_form"):
             "1 - Single", "2 - Married", "3 - Widower", "4 - Divorced", "5 - Facto Union", "6 - Legally Separated"
         ])
         inputs["Daytime_evening_attendance"] = st.selectbox("Jadwal Kehadiran", ["0 - Siang", "1 - Sore"])
-        inputs["Application_mode"] = st.selectbox("Mode Aplikasi", [f"{i} - Mode {i}" for i in range(1, 58)])
-        inputs["Course"] = st.selectbox("Program Studi", [f"{i} - Program {i}" for i in range(33, 10000)])
-        inputs["Nacionality"] = st.selectbox("Kebangsaan", [f"{i} - Country {i}" for i in range(1, 110)])
+        inputs["Application_mode"] = st.selectbox("Mode Aplikasi", [
+            "1 - 1st phase - general contingent",
+            "2 - Ordinance No. 612/93",
+            "5 - 1st phase - special contingent (Azores Island)",
+            "7 - Holders of other higher courses",
+            "10 - Ordinance No. 854-B/99",
+            "15 - International student (bachelor)",
+            "16 - 1st phase - special contingent (Madeira Island)",
+            "17 - 2nd phase - general contingent",
+            "18 - 3rd phase - general contingent",
+            "26 - Ordinance No. 533-A/99, item b2) (Different Plan)",
+            "27 - Ordinance No. 533-A/99, item b3 (Other Institution)",
+            "39 - Over 23 years old",
+            "42 - Transfer", "43 - Change of course", "44 - Technological specialization diploma holders",
+            "51 - Change of institution/course", "53 - Short cycle diploma holders",
+            "57 - Change of institution/course (International)"
+        ])
+        inputs["Course"] = st.selectbox("Program Studi", [
+            "33 - Biofuel Production Technologies", "171 - Animation and Multimedia Design",
+            "8014 - Social Service (evening attendance)", "9003 - Agronomy", "9070 - Communication Design",
+            "9085 - Veterinary Nursing", "9119 - Informatics Engineering", "9130 - Equinculture",
+            "9147 - Management", "9238 - Social Service", "9254 - Tourism", "9500 - Nursing",
+            "9556 - Oral Hygiene", "9670 - Advertising and Marketing Management",
+            "9773 - Journalism and Communication", "9853 - Basic Education",
+            "9991 - Management (evening attendance)"
+        ])
+        inputs["Nacionality"] = st.selectbox("Kebangsaan", [
+            "1 - Portuguese", "2 - German", "6 - Spanish", "11 - Italian", "13 - Dutch", "14 - English",
+            "17 - Lithuanian", "21 - Angolan", "22 - Cape Verdean", "24 - Guinean", "25 - Mozambican",
+            "26 - Santomean", "32 - Turkish", "41 - Brazilian", "62 - Romanian", "100 - Moldova (Republic of)",
+            "101 - Mexican", "103 - Ukrainian", "105 - Russian", "108 - Cuban", "109 - Colombian"
+        ])
         inputs["Mothers_qualification"] = st.selectbox("Kualifikasi Ibu", get_options(qual_dict))
         inputs["Fathers_qualification"] = st.selectbox("Kualifikasi Ayah", get_options(qual_dict))
         inputs["Mothers_occupation"] = st.selectbox("Pekerjaan Ibu", get_options(occupation_dict))
@@ -93,12 +121,12 @@ with st.form("student_form"):
 
     with col2:
         for col in numerical_pca_1 + numerical_pca_2:
-            inputs[col] = st.number_input(col.replace("_", " "), step=0.1)
+            label = col.replace("_", " ")
+            inputs[col] = st.number_input(label, step=0.1)
 
     submitted = st.form_submit_button("Prediksi Status Mahasiswa")
 
 if submitted:
-    # Parse dan preprocessing
     input_df = pd.DataFrame([inputs])
 
     for col in input_df.columns:
@@ -111,7 +139,6 @@ if submitted:
     for col in numerical_pca_1 + numerical_pca_2:
         input_df[col] = scalers[col].transform(input_df[[col]])
 
-    # PCA transformasi
     pc1 = pca_1.transform(input_df[numerical_pca_1])
     pc2 = pca_2.transform(input_df[numerical_pca_2])
     pc_df = pd.DataFrame(pc1, columns=[f"pc1_{i+1}" for i in range(pc1.shape[1])])
