@@ -134,13 +134,13 @@ if submitted:
         if input_df[col].dtype == object and " - " in str(input_df[col][0]):
             input_df[col] = input_df[col].str.split(" - ").str[0].astype(int)
 
+    # Scaling untuk kolom numerikal
+    for col in numerical_pca_1 + numerical_pca_2:
+        input_df[[col]] = scalers[col].transform(input_df[[col]])
+
     # Encoding untuk kolom kategorikal
     for col in categorical_columns:
         input_df[col] = encoders[col].transform(input_df[[col]])
-
-    # Scaling untuk kolom numerikal (preserve sebagai DataFrame)
-    for col in numerical_pca_1 + numerical_pca_2:
-        input_df[[col]] = scalers[col].transform(input_df[[col]])
 
     # PCA 1
     pca_input_1 = input_df[numerical_pca_1].copy()
@@ -152,10 +152,27 @@ if submitted:
     pc2 = pca_2.transform(pca_input_2)
     pc2_df = pd.DataFrame(pc2, columns=[f"pc2_{i+1}" for i in range(pc2.shape[1])])
 
-    # Gabungkan semua: categorical + pc1 + pc2
-    final_df = input_df.drop(columns=numerical_pca_1 + numerical_pca_2).reset_index(drop=True)
-    final_df = pd.concat([final_df, pc1_df, pc2_df], axis=1)
-
+    # Buat DataFrame final dengan fitur kategorikal saja
+    final_df = input_df[categorical_columns].copy()
+    
+    # Tambahkan komponen PCA
+    for col in pc1_df.columns:
+        final_df[col] = pc1_df[col].values
+    
+    for col in pc2_df.columns:
+        final_df[col] = pc2_df[col].values
+    
+    # Dapatkan nama fitur dari model untuk memastikan kecocokan yang tepat
+    try:
+        feature_names = model.feature_names_in_
+        # Pastikan kolom dalam urutan yang sama seperti saat pelatihan
+        final_df = final_df[feature_names]
+    except:
+        # Jika nama fitur tidak tersedia dalam model,
+        # buat urutan kolom yang diharapkan berdasarkan kode pelatihan Anda
+        expected_cols = categorical_columns + [f"pc1_{i+1}" for i in range(5)] + [f"pc2_{i+1}" for i in range(2)]
+        final_df = final_df[expected_cols]
+    
     # Prediksi
     pred = model.predict(final_df)
     pred_label = target_encoder.inverse_transform(pred)[0]
