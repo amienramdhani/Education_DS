@@ -7,6 +7,7 @@ import joblib
 model = joblib.load("model/gboost_model.joblib")
 target_encoder = joblib.load("model/encoder_target.joblib")
 
+# Daftar fitur numerik untuk PCA
 numerical_pca_1 = [
     'Curricular_units_1st_sem_credited', 'Curricular_units_1st_sem_enrolled',
     'Curricular_units_1st_sem_evaluations', 'Curricular_units_1st_sem_approved',
@@ -29,20 +30,22 @@ categorical_columns = [
     "Tuition_fees_up_to_date", "Gender", "Scholarship_holder", "International"
 ]
 
+# Load scaler dan encoder
 scalers = {col: joblib.load(f"model/scaler_{col}.joblib") for col in numerical_pca_1 + numerical_pca_2}
 encoders = {col: joblib.load(f"model/encoder_{col}.joblib") for col in categorical_columns}
 pca_1 = joblib.load("model/pca_1.joblib")
 pca_2 = joblib.load("model/pca_2.joblib")
 
+# Konfigurasi halaman
 st.set_page_config(page_title="Prediksi Status Mahasiswa", layout="wide")
 st.title("🎓 Prediksi Status Mahasiswa")
 st.markdown("Isi form di bawah ini untuk memprediksi status mahasiswa.")
 
-# Dropdown options sebagai list string "kode - label"
+# Fungsi bantu untuk dropdown
 def get_options(mapping):
     return [f"{k} - {v}" for k, v in mapping.items()]
 
-# Mapping dictionary
+# Mapping label
 qual_dict = {
     1: "Secondary Education", 2: "Bachelor's Degree", 3: "Degree", 4: "Master's",
     5: "Doctorate", 6: "Frequency of Higher Education", 9: "12th Year Not Completed",
@@ -66,6 +69,7 @@ occupation_dict = {
     194: "Food Prep"
 }
 
+# Form input
 with st.form("student_form"):
     col1, col2 = st.columns(2)
     inputs = {}
@@ -75,9 +79,33 @@ with st.form("student_form"):
             "1 - Single", "2 - Married", "3 - Widower", "4 - Divorced", "5 - Facto Union", "6 - Legally Separated"
         ])
         inputs["Daytime_evening_attendance"] = st.selectbox("Jadwal Kehadiran", ["0 - Siang", "1 - Sore"])
-        inputs["Application_mode"] = st.selectbox("Mode Aplikasi", [f"{i} - Mode {i}" for i in range(1, 58)])
-        inputs["Course"] = st.selectbox("Program Studi", [f"{i} - Program {i}" for i in range(33, 10000)])
-        inputs["Nacionality"] = st.selectbox("Kebangsaan", [f"{i} - Country {i}" for i in range(1, 110)])
+        inputs["Application_mode"] = st.selectbox("Mode Aplikasi", [
+            "1 - 1st phase - general contingent", "2 - Ordinance No. 612/93",
+            "5 - 1st phase - special contingent (Azores Island)", "7 - Holders of other higher courses",
+            "10 - Ordinance No. 854-B/99", "15 - International student (bachelor)",
+            "16 - 1st phase - special contingent (Madeira Island)", "17 - 2nd phase - general contingent",
+            "18 - 3rd phase - general contingent", "26 - Ordinance No. 533-A/99, item b2) (Different Plan)",
+            "27 - Ordinance No. 533-A/99, item b3 (Other Institution)", "39 - Over 23 years old",
+            "42 - Transfer", "43 - Change of course", "44 - Technological specialization diploma holders",
+            "51 - Change of institution/course", "53 - Short cycle diploma holders",
+            "57 - Change of institution/course (International)"
+        ])
+        inputs["Course"] = st.selectbox("Program Studi", [
+            "33 - Biofuel Production Technologies", "171 - Animation and Multimedia Design",
+            "8014 - Social Service (evening attendance)", "9003 - Agronomy", "9070 - Communication Design",
+            "9085 - Veterinary Nursing", "9119 - Informatics Engineering", "9130 - Equinculture",
+            "9147 - Management", "9238 - Social Service", "9254 - Tourism", "9500 - Nursing",
+            "9556 - Oral Hygiene", "9670 - Advertising and Marketing Management",
+            "9773 - Journalism and Communication", "9853 - Basic Education",
+            "9991 - Management (evening attendance)"
+        ])
+        inputs["Nacionality"] = st.selectbox("Kebangsaan", [
+            "1 - Portuguese", "2 - German", "6 - Spanish", "11 - Italian", "13 - Dutch",
+            "14 - English", "17 - Lithuanian", "21 - Angolan", "22 - Cape Verdean",
+            "24 - Guinean", "25 - Mozambican", "26 - Santomean", "32 - Turkish",
+            "41 - Brazilian", "62 - Romanian", "100 - Moldova (Republic of)",
+            "101 - Mexican", "103 - Ukrainian", "105 - Russian", "108 - Cuban", "109 - Colombian"
+        ])
         inputs["Mothers_qualification"] = st.selectbox("Kualifikasi Ibu", get_options(qual_dict))
         inputs["Fathers_qualification"] = st.selectbox("Kualifikasi Ayah", get_options(qual_dict))
         inputs["Mothers_occupation"] = st.selectbox("Pekerjaan Ibu", get_options(occupation_dict))
@@ -97,30 +125,34 @@ with st.form("student_form"):
 
     submitted = st.form_submit_button("Prediksi Status Mahasiswa")
 
+# Prediksi ketika tombol ditekan
 if submitted:
-    # Parse dan preprocessing
     input_df = pd.DataFrame([inputs])
 
+    # Pisahkan kode dari dropdown "x - y"
     for col in input_df.columns:
         if input_df[col].dtype == object and " - " in str(input_df[col][0]):
             input_df[col] = input_df[col].str.split(" - ").str[0].astype(int)
 
+    # Encoding kategori
     for col in categorical_columns:
         input_df[col] = encoders[col].transform(input_df[col])
 
+    # Scaling numerik
     for col in numerical_pca_1 + numerical_pca_2:
         input_df[col] = scalers[col].transform(input_df[[col]])
 
     # PCA transformasi
     pc1 = pca_1.transform(input_df[numerical_pca_1])
     pc2 = pca_2.transform(input_df[numerical_pca_2])
+
     pc_df = pd.DataFrame(pc1, columns=[f"pc1_{i+1}" for i in range(pc1.shape[1])])
     pc_df[[f"pc2_{i+1}" for i in range(pc2.shape[1])]] = pc2
 
     final_df = input_df.drop(columns=numerical_pca_1 + numerical_pca_2).reset_index(drop=True)
     final_df = pd.concat([final_df, pc_df], axis=1)
 
+    # Prediksi dan tampilkan hasil
     pred = model.predict(final_df)
     pred_label = target_encoder.inverse_transform(pred)[0]
-
     st.success(f"🎯 Prediksi Status Mahasiswa: **{pred_label}**")
