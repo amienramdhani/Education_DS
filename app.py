@@ -13,10 +13,9 @@ pca_2 = joblib.load("model/pca_2.joblib")
 
 # Fitur yang digunakan
 numerical_pca_1 = [
-    'Curricular_units_1st_sem_credited', 'Curricular_units_1st_sem_enrolled',
+    'Curricular_units_1st_sem_enrolled',
     'Curricular_units_1st_sem_evaluations', 'Curricular_units_1st_sem_approved',
-    'Curricular_units_1st_sem_grade', 'Curricular_units_1st_sem_without_evaluations',
-    'Curricular_units_2nd_sem_credited', 'Curricular_units_2nd_sem_enrolled',
+    'Curricular_units_1st_sem_grade', 'Curricular_units_1st_sem_without_evaluations', 'Curricular_units_2nd_sem_enrolled',
     'Curricular_units_2nd_sem_evaluations', 'Curricular_units_2nd_sem_approved',
     'Curricular_units_2nd_sem_grade', 'Curricular_units_2nd_sem_without_evaluations'
 ]
