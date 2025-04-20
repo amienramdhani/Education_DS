@@ -22,7 +22,7 @@ numerical_pca_1 = [
 
 numerical_pca_2 = [
     'Previous_qualification_grade', 'Admission_grade', 'Age_at_enrollment',
-    'Unemployment_rate', 'Inflation_rate', 'GDP', 'Application_order'
+    'Unemployment_rate', 'Inflation_rate', 'GDP', 
 ]
 
 categorical_columns = [
