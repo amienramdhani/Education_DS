@@ -26,8 +26,7 @@ numerical_pca_2 = [
 ]
 
 categorical_columns = [
-    "Marital_status", "Application_mode", "Course",
-    "Daytime_evening_attendance", "Previous_qualification", "Nacionality",
+    "Marital_status", "Application_mode", "Course", "Previous_qualification",
     "Mothers_qualification", "Fathers_qualification", "Mothers_occupation",
     "Fathers_occupation", "Displaced", "Educational_special_needs", "Debtor",
     "Tuition_fees_up_to_date", "Gender", "Scholarship_holder",
@@ -83,12 +82,6 @@ with st.form("student_form"):
             "9556 - Oral Hygiene", "9670 - Advertising and Marketing Management",
             "9773 - Journalism and Communication", "9853 - Basic Education",
             "9991 - Management (evening attendance)"
-        ])
-        inputs["Nacionality"] = st.selectbox("Kebangsaan", [
-            "1 - Portuguese", "2 - German", "6 - Spanish", "11 - Italian", "13 - Dutch", "14 - English",
-            "17 - Lithuanian", "21 - Angolan", "22 - Cape Verdean", "24 - Guinean", "25 - Mozambican",
-            "26 - Santomean", "32 - Turkish", "41 - Brazilian", "62 - Romanian", "100 - Moldova (Republic of)",
-            "101 - Mexican", "103 - Ukrainian", "105 - Russian", "108 - Cuban", "109 - Colombian"
         ])
         inputs["Mothers_qualification"] = st.text_input("Kualifikasi Ibu", "1")
         inputs["Fathers_qualification"] = st.text_input("Kualifikasi Ayah", "1")
