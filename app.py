@@ -124,7 +124,8 @@ if submitted:
 
     # Encoding
     for col in categorical_columns:
-        input_df[col] = encoders[col].transform(input_df[[col]])
+        input_df[[col]] = input_df[[col]].astype(str)
+        input_df[[col]] = encoders[col].transform(input_df[[col]])
 
     # PCA transformasi
     pc1 = pca_1.transform(input_df[numerical_pca_1])
