@@ -61,7 +61,6 @@ with st.form("student_form"):
         inputs["Marital_status"] = st.selectbox("Status Pernikahan", [
             "1 - Single", "2 - Married", "3 - Widower", "4 - Divorced", "5 - Facto Union", "6 - Legally Separated"
         ])
-        inputs["Daytime_evening_attendance"] = st.selectbox("Jadwal Kehadiran", ["0 - Siang", "1 - Sore"])
         inputs["Application_mode"] = st.selectbox("Mode Aplikasi", [
             "1 - 1st phase - general contingent",
             "2 - Ordinance No. 612/93", "5 - 1st phase - special contingent (Azores Island)",
