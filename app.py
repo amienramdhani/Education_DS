@@ -28,7 +28,7 @@ numerical_pca_2 = [
 categorical_columns = [
     "Marital_status", "Application_mode", "Course", "Previous_qualification",
     "Mothers_qualification", "Fathers_qualification", "Mothers_occupation",
-    "Fathers_occupation", "Displaced", "Educational_special_needs", "Debtor",
+    "Fathers_occupation", "Displaced", "Debtor",
     "Tuition_fees_up_to_date", "Gender", "Scholarship_holder",
 ]
 
